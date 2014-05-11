@@ -39,4 +39,12 @@ public class TrainController : MonoBehaviour {
 			rp.Reset();
 		}
 	}
+
+	public void SetVisible(bool value) {
+		Renderer[] rds = GetComponentsInChildren<Renderer>();
+
+		foreach (Renderer r in rds) {
+			r.enabled = value;
+		}
+	}
 }

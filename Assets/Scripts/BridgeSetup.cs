@@ -27,12 +27,14 @@ public class BridgeSetup : MonoBehaviour {
 			if (eLevelStage.SetupStage == levelStage) {
 				Time.timeScale = 0.0f;
 				SetSnapPointsVisible(true);
-				trainController.ResetTrain();
+				trainController.SetVisible(false);
 				SetBeamsToSetup();
 			} else if (eLevelStage.PlayStage == levelStage) {
 				Time.timeScale = 1.0f;
 				SetSnapPointsVisible(false);
 				SetBeamsToPlay();
+				trainController.SetVisible(true);
+				trainController.ResetTrain();
 				trainController.StartTrain();
 			}
 		}
@@ -65,8 +67,6 @@ public class BridgeSetup : MonoBehaviour {
 	private Vector3 gridOrigin = Vector3.zero;
 
 	void Start () {
-		levelStage = eLevelStage.SetupStage;
-
 		terrainGenerator.CreateTerrain();
 
 		snapPoints = new GameObject();
@@ -101,23 +101,17 @@ public class BridgeSetup : MonoBehaviour {
 
 		for (int j = 0; j != h; j++) {
 			for (int i = 0; i != w; i++) {
-				bool foundAnchor = false;
-				for (int k = 0; k != anchorPointLocations.Length; k++) {
-					if ((Tuple<int, int>.Of(i, j)).Equals(anchorPointLocations[k])) {
-						foundAnchor = true;
-						break;
-					}
-				}
-
+				bool foundAnchor = FindAnchorPointIndex(i, j) != -1;
 				Vector3 pos = FromSnapToSpace(new Vector3(i, j, gridOrigin.z));
 				GameObject go = Instantiate((foundAnchor? ap: sp), pos, new Quaternion()) as GameObject;
 				go.transform.parent = snapPoints.transform;
 				go.layer = 8;
 				go.GetComponent<SnapPoint>().position = Tuple<int, int>.Of(i, j);
 				go.GetComponent<SnapPoint>().isBase = foundAnchor;
-				go.renderer.material.renderQueue = 4000;
 			}
 		}
+
+		LevelStage = eLevelStage.SetupStage;
 	}
 
 	void Update () {
@@ -125,7 +119,7 @@ public class BridgeSetup : MonoBehaviour {
 			if (Input.GetMouseButtonDown(0) && !BridgeBuilderGUI.ClickedOnGUI()) {
 				GameObject objClicked = GetSnapPointClicked();
 				if (null != objClicked) {
-					CreateBeam(objClicked.transform.position);
+					CreateBeam(objClicked);
 				}
 			}
 		}
@@ -148,18 +142,29 @@ public class BridgeSetup : MonoBehaviour {
 		return Mathf.FloorToInt(FromSpaceToSnap(a).y) == roadLevel && Mathf.FloorToInt(FromSpaceToSnap(b).y) == roadLevel;
 	}
 
+	public void CreateHingeForSnapPoint(GameObject pointEnd) {
+		Vector3 pointEndSnapPoint = FromSpaceToSnap(pointEnd.transform.position);
+		int api = FindAnchorPointIndex(Mathf.FloorToInt(pointEndSnapPoint.x), Mathf.FloorToInt(pointEndSnapPoint.y));
+		if (api < 0) return;
+
+		SnapPoint sp = GetSnapPoint(anchorPointLocations[api]._1, anchorPointLocations[api]._2);
+
+		HingeJoint hj = pointEnd.AddComponent("HingeJoint") as HingeJoint;
+		hj.connectedBody = sp.GetComponent<Rigidbody>();
+	}
+
 	public int GetBridgeCost() {
 		return bridgeCost;
 	}
 
 	//private
 
-	private BridgeBeam CreateBeam(Vector3 pos) {
-		GameObject go = Instantiate(Resources.Load ("BridgeBeam"), pos, new Quaternion()) as GameObject;
+	private BridgeBeam CreateBeam(GameObject snapPoint) {
+		GameObject go = Instantiate(Resources.Load ("BridgeBeam"), snapPoint.transform.position, new Quaternion()) as GameObject;
 		BridgeBeam bb = go.GetComponent<BridgeBeam>();
 		bb.bridgeSetupParent = this;
-		Vector3 newPos = new Vector3(pos.x, pos.y, gridOrigin.z+1);
-		bb.StartLayout(newPos);
+		Vector3 newPos = new Vector3(snapPoint.transform.position.x, snapPoint.transform.position.y, gridOrigin.z+1);
+		bb.StartLayout(newPos, snapPoint);
 		bb.transform.parent = bridgeBeams.transform;
 
 		bridgeCost += 100;
@@ -216,5 +221,26 @@ public class BridgeSetup : MonoBehaviour {
 		foreach (BridgeBeam b in bb) {
 			b.ResetState();
 		}
+	}
+
+	private int FindAnchorPointIndex(int i, int j) {
+		for (int k = 0; k != anchorPointLocations.Length; k++) {
+			if (anchorPointLocations[k]._1 == i && anchorPointLocations[k]._2 == j) {
+				return k;
+			}
+		}
+		return -1;
+	}
+
+	private SnapPoint GetSnapPoint(int i, int j) {
+		SnapPoint[] snps = snapPoints.GetComponentsInChildren<SnapPoint>();
+
+		foreach (SnapPoint sp in snps) {
+			if (sp.position._1 == i && sp.position._2 == j) {
+				return sp;
+			}
+		}
+
+		return null;
 	}
 }

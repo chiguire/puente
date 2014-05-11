@@ -74,6 +74,7 @@ public class BridgeBeam : MonoBehaviour {
 			DestroyIfSamePosition();
 			pointClicked = null;
 			isRoadBeam = bridgeSetupParent.IsInRoadLevel(pointStart.transform.position, pointEnd.transform.position);
+			bridgeSetupParent.CreateHingeForSnapPoint(pointEnd);
 		}
 
 		if (eBeamState.LayoutMode == beamState) {
@@ -90,7 +91,6 @@ public class BridgeBeam : MonoBehaviour {
 			}
 		} else if (eBeamState.TestingMode == beamState) {
 			PositionBeam();
-
 		}
 
 	}
@@ -109,9 +109,12 @@ public class BridgeBeam : MonoBehaviour {
 		qt.eulerAngles = euAngles;
 		
 		beam.transform.localRotation = qt;
+
+		pointEnd.GetComponent<SpringJoint>().minDistance = beamScale.x*2.0f;
+		pointEnd.GetComponent<SpringJoint>().maxDistance = beamScale.x*2.0f+0.02f;
 	}
 
-	public void StartLayout(Vector3 clickPosition) {
+	public void StartLayout(Vector3 clickPosition, GameObject hingePoint) {
 		beam = transform.Find("Beam").gameObject;
 		pointStart = transform.Find("PointStart").gameObject;
 		pointStartRigidbody = pointStart.rigidbody;
@@ -124,6 +127,9 @@ public class BridgeBeam : MonoBehaviour {
 		beamState = eBeamState.LayoutMode;
 		pointClicked = pointEnd;
 		transform.position = clickPosition;
+
+		HingeJoint hj = pointStart.AddComponent("HingeJoint") as HingeJoint;
+		hj.connectedBody = hingePoint.rigidbody;
 	}
 
 	public void ResetState() {

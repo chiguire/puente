@@ -16,15 +16,14 @@ public class SnapPoint : MonoBehaviour {
 	}
 
 	void OnMouseOver() {
-		transform.localScale = originalScale*3;
+		if (isBase) {
+			transform.localScale = originalScale*2;
+		}
 	}
 
 	void OnMouseExit() {
-		transform.localScale = originalScale;
+		if (isBase) {
+			transform.localScale = originalScale;
+		}
 	}
-
-	// Update is called once per frame
-//	void Update () {
-//	
-//	}
 }
