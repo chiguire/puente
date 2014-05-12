@@ -24,7 +24,7 @@ public class TrainController : MonoBehaviour {
 
 	void FixedUpdate() {
 		if (trainWorking) {
-			trainHead.rigidbody.AddForce(trainDirection, ForceMode.Force);
+			trainHead.rigidbody.AddForce(trainDirection, ForceMode.Acceleration);
 		}
 	}
 

@@ -16,7 +16,7 @@ public class SnapPoint : MonoBehaviour {
 	}
 
 	void OnMouseOver() {
-		if (isBase) {
+		if (isBase && bridgeSetupParent != null && BridgeSetup.eLevelStage.SetupStage == bridgeSetupParent.LevelStage) {
 			transform.localScale = originalScale*2;
 		}
 	}

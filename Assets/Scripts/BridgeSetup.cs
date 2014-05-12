@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class BridgeSetup : MonoBehaviour {
 
@@ -92,13 +93,13 @@ public class BridgeSetup : MonoBehaviour {
 
 		GameObject ap = Resources.Load("AnchorPoint") as GameObject;
 		GameObject sp = Resources.Load("SnapPoint") as GameObject;
-
-		for (int i = 0; i != anchorPointLocations.Length; i++)
-		{
-			GameObject go = Instantiate(ap, FromSnapToSpace(new Vector3(anchorPointLocations[i]._1, anchorPointLocations[i]._2, gridOrigin.z)), new Quaternion()) as GameObject;
-			go.transform.parent = snapPoints.transform;
-		}
-
+//
+//		for (int i = 0; i != anchorPointLocations.Length; i++)
+//		{
+//			GameObject go = Instantiate(ap, FromSnapToSpace(new Vector3(anchorPointLocations[i]._1, anchorPointLocations[i]._2, gridOrigin.z)), new Quaternion()) as GameObject;
+//			go.transform.parent = snapPoints.transform;
+//		}
+//
 		for (int j = 0; j != h; j++) {
 			for (int i = 0; i != w; i++) {
 				bool foundAnchor = FindAnchorPointIndex(i, j) != -1;
@@ -108,6 +109,7 @@ public class BridgeSetup : MonoBehaviour {
 				go.layer = 8;
 				go.GetComponent<SnapPoint>().position = Tuple<int, int>.Of(i, j);
 				go.GetComponent<SnapPoint>().isBase = foundAnchor;
+				go.GetComponent<SnapPoint>().bridgeSetupParent = this;
 			}
 		}
 
@@ -142,15 +144,8 @@ public class BridgeSetup : MonoBehaviour {
 		return Mathf.FloorToInt(FromSpaceToSnap(a).y) == roadLevel && Mathf.FloorToInt(FromSpaceToSnap(b).y) == roadLevel;
 	}
 
-	public void CreateHingeForSnapPoint(GameObject pointEnd) {
-		Vector3 pointEndSnapPoint = FromSpaceToSnap(pointEnd.transform.position);
-		int api = FindAnchorPointIndex(Mathf.FloorToInt(pointEndSnapPoint.x), Mathf.FloorToInt(pointEndSnapPoint.y));
-		if (api < 0) return;
-
-		SnapPoint sp = GetSnapPoint(anchorPointLocations[api]._1, anchorPointLocations[api]._2);
-
-		HingeJoint hj = pointEnd.AddComponent("HingeJoint") as HingeJoint;
-		hj.connectedBody = sp.GetComponent<Rigidbody>();
+	public void HandleEndPoint(GameObject pointEnd) {
+		CreateHingeForSnapPoint(pointEnd);
 	}
 
 	public int GetBridgeCost() {
@@ -164,7 +159,7 @@ public class BridgeSetup : MonoBehaviour {
 		BridgeBeam bb = go.GetComponent<BridgeBeam>();
 		bb.bridgeSetupParent = this;
 		Vector3 newPos = new Vector3(snapPoint.transform.position.x, snapPoint.transform.position.y, gridOrigin.z+1);
-		bb.StartLayout(newPos, snapPoint);
+		bb.StartLayout(newPos, snapPoint, this);
 		bb.transform.parent = bridgeBeams.transform;
 
 		bridgeCost += 100;
@@ -242,5 +237,48 @@ public class BridgeSetup : MonoBehaviour {
 		}
 
 		return null;
+	}
+
+	private void CreateHingeForSnapPoint(GameObject pointEnd) {
+		Vector3 pointEndSnapPoint = FromSpaceToSnap(pointEnd.transform.position);
+		int api = FindAnchorPointIndex(Mathf.FloorToInt(pointEndSnapPoint.x), Mathf.FloorToInt(pointEndSnapPoint.y));
+		SnapPoint sp = null;
+
+		if (api > 0) {
+			sp = GetSnapPoint(anchorPointLocations[api]._1, anchorPointLocations[api]._2);
+		} else {
+			sp = GetSnapPointFromBridgeBeams(pointEnd);
+
+			if (sp == null) {
+				return;
+			}
+		}
+
+		FixedJoint hj = pointEnd.AddComponent("FixedJoint") as FixedJoint;
+		hj.connectedBody = sp.GetComponent<Rigidbody>();
+	}
+
+	private SnapPoint GetSnapPointFromBridgeBeams(GameObject point) {
+		SnapPoint[] bbSnapPoints = GetBridgeBeamSnapPoints();
+		Vector3 pos = point.transform.position;
+
+		foreach (SnapPoint sp in bbSnapPoints) {
+			if (sp.gameObject != point && (sp.gameObject.transform.position - pos).magnitude < Mathf.Epsilon) {
+				return sp;
+			}
+		}
+		return null;
+	}
+
+	private SnapPoint[] GetBridgeBeamSnapPoints() {
+		BridgeBeam[] bbs = bridgeBeams.GetComponentsInChildren<BridgeBeam>();
+		List<SnapPoint> snps = new List<SnapPoint>();
+
+		foreach (BridgeBeam bb in bbs) {
+			snps.Add(bb.PointStart.GetComponent<SnapPoint>());
+			snps.Add(bb.PointEnd.GetComponent<SnapPoint>());
+		}
+
+		return snps.ToArray();
 	}
 }

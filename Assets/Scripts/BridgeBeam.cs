@@ -43,38 +43,26 @@ public class BridgeBeam : MonoBehaviour {
 	private static Plane beamPlane = new Plane(-Vector3.forward, new Vector3(0.0f, 0.0f, 1.0f));
 	private const float MAX_BEAM_DISTANCE = 4.0f;
 
+	public GameObject PointStart {
+		get { return pointStart; }
+	}
+
+	public GameObject PointEnd {
+		get { return pointEnd; }
+	}
+
 	// Use this for initialization
 	void Start () {
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		/*if (eBeamState.BuiltMode == beamState && Input.GetMouseButtonDown(0) && !BridgeBuilderGUI.ClickedOnGUI()) {
-			Ray r = Camera.main.ScreenPointToRay(Input.mousePosition);
-			RaycastHit rh = new RaycastHit();
-			bool hitSomeone = false;
-			
-			if (pointStart.collider.Raycast(r, out rh, Mathf.Infinity)) {
-				pointClicked = pointStart;
-				hitSomeone = true;
-			}
-			if (!hitSomeone && pointEnd.collider.Raycast(r, out rh, Mathf.Infinity)) {
-				pointClicked = pointEnd;
-				hitSomeone = true;
-			}
-
-			if (hitSomeone) {
-				beamState = eBeamState.LayoutMode;
-			} else {
-				beamState = eBeamState.BuiltMode;
-			}
-		} else */
 		if (eBeamState.LayoutMode == beamState && Input.GetMouseButtonUp(0)){
 			beamState = eBeamState.BuiltMode;
 			DestroyIfSamePosition();
 			pointClicked = null;
 			isRoadBeam = bridgeSetupParent.IsInRoadLevel(pointStart.transform.position, pointEnd.transform.position);
-			bridgeSetupParent.CreateHingeForSnapPoint(pointEnd);
+			bridgeSetupParent.HandleEndPoint(pointEnd);
 		}
 
 		if (eBeamState.LayoutMode == beamState) {
@@ -110,16 +98,23 @@ public class BridgeBeam : MonoBehaviour {
 		
 		beam.transform.localRotation = qt;
 
-		pointEnd.GetComponent<SpringJoint>().minDistance = beamScale.x*2.0f;
-		pointEnd.GetComponent<SpringJoint>().maxDistance = beamScale.x*2.0f+0.02f;
+		if (eBeamState.LayoutMode == beamState) {
+			SpringJoint sj = pointEnd.GetComponent<SpringJoint>();
+			sj.minDistance = 0;
+			sj.maxDistance = 0;
+			sj.spring = 120;
+			sj.damper = 0.0f;
+		}
 	}
 
-	public void StartLayout(Vector3 clickPosition, GameObject hingePoint) {
+	public void StartLayout(Vector3 clickPosition, GameObject hingePoint, BridgeSetup bs) {
 		beam = transform.Find("Beam").gameObject;
 		pointStart = transform.Find("PointStart").gameObject;
 		pointStartRigidbody = pointStart.rigidbody;
+		pointStart.GetComponent<SnapPoint>().bridgeSetupParent = bs;
 		pointEnd = transform.Find("PointEnd").gameObject;
 		pointEndRigidbody = pointEnd.rigidbody;
+		pointEnd.GetComponent<SnapPoint>().bridgeSetupParent = bs;
 
 		pointStartRigidbody.isKinematic = true;
 		pointEndRigidbody.isKinematic = true;
@@ -128,7 +123,7 @@ public class BridgeBeam : MonoBehaviour {
 		pointClicked = pointEnd;
 		transform.position = clickPosition;
 
-		HingeJoint hj = pointStart.AddComponent("HingeJoint") as HingeJoint;
+		FixedJoint hj = pointStart.AddComponent("FixedJoint") as FixedJoint;
 		hj.connectedBody = hingePoint.rigidbody;
 	}
 
