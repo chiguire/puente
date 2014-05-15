@@ -11,7 +11,24 @@ public class BridgeBeam : MonoBehaviour {
 
 	public BridgeSetup bridgeSetupParent = null;
 
-	public bool isRoadBeam = false;
+	private bool isRoadBeam = false;
+
+	public bool IsRoadBeam {
+		get { return isRoadBeam; }
+		set {
+			isRoadBeam = value;
+			Renderer r = beam.GetComponentInChildren<Renderer>();
+			Color c = r.material.color;
+			if (isRoadBeam) {
+				c.a = 1.0f;
+				beam.layer = 9; //collides with train
+			} else {
+				c.a = 0.5f;
+				beam.layer = 10; //does not collide with train
+			}
+			r.material.color = c;
+		}
+	}
 
 	private eBeamState beamState = eBeamState.LayoutMode;
 
@@ -23,8 +40,6 @@ public class BridgeBeam : MonoBehaviour {
 			if (eBeamState.TestingMode == beamState) {
 				pointStartRigidbody.isKinematic = false;
 				pointEndRigidbody.isKinematic = false;
-
-				pointStart.layer = isRoadBeam? 9: 10;
 			} else {
 				pointStartRigidbody.isKinematic = true;
 				pointEndRigidbody.isKinematic = true;
@@ -40,7 +55,7 @@ public class BridgeBeam : MonoBehaviour {
 
 	private GameObject pointClicked;
 
-	private static Plane beamPlane = new Plane(-Vector3.forward, new Vector3(0.0f, 0.0f, 1.0f));
+	private static Plane beamPlane = new Plane(Vector3.forward, new Vector3(0.0f, 0.0f, 0.0f));
 	private const float MAX_BEAM_DISTANCE = 4.0f;
 
 	public GameObject PointStart {
@@ -61,7 +76,7 @@ public class BridgeBeam : MonoBehaviour {
 			beamState = eBeamState.BuiltMode;
 			DestroyIfSamePosition();
 			pointClicked = null;
-			isRoadBeam = bridgeSetupParent.IsInRoadLevel(pointStart.transform.position, pointEnd.transform.position);
+			IsRoadBeam = bridgeSetupParent.IsInRoadLevel(pointStart.transform.position, pointEnd.transform.position);
 			bridgeSetupParent.HandleEndPoint(pointEnd);
 		}
 
@@ -73,8 +88,9 @@ public class BridgeBeam : MonoBehaviour {
 			
 			if (beamPlane.Raycast(r, out distance)) {
 				Vector3 p = r.GetPoint(distance);
-				pointClicked.transform.position = LimitPointDistance(p, pointNotClicked) + Vector3.forward;
+				pointClicked.transform.position = LimitPointDistance(p, pointNotClicked);
 				pointClicked.GetComponent<ResetPhysics>().UpdatePosition();
+				IsRoadBeam = bridgeSetupParent.IsInRoadLevel(pointStart.transform.position, pointEnd.transform.position);
 				PositionBeam();
 			}
 		} else if (eBeamState.TestingMode == beamState) {
@@ -86,24 +102,21 @@ public class BridgeBeam : MonoBehaviour {
 	private void PositionBeam() {
 		Vector3 beamVector = pointEnd.transform.position - pointStart.transform.position;
 		
-		beam.transform.position = pointStart.transform.position;
-		Vector3 beamScale = new Vector3(beamVector.magnitude/2.0f, 1.0f, 1.0f);
+		beam.transform.position = pointStart.transform.position + beamVector/2.0f;
+		Vector3 beamScale = new Vector3(1.0f, beamVector.magnitude/2.0f, 1.0f);
 		beam.transform.localScale = beamScale;
 		
 		Vector3 euAngles = Vector3.zero;
 		Quaternion qt = Quaternion.identity;
 		
-		euAngles.z = Mathf.Atan2(beamVector.y, beamVector.x)*Mathf.Rad2Deg;
+		euAngles.z = Mathf.Atan2(beamVector.y, beamVector.x)*Mathf.Rad2Deg+90;
 		qt.eulerAngles = euAngles;
 		
 		beam.transform.localRotation = qt;
 
 		if (eBeamState.LayoutMode == beamState) {
-			SpringJoint sj = pointEnd.GetComponent<SpringJoint>();
-			sj.minDistance = 0;
-			sj.maxDistance = 0;
-			sj.spring = 120;
-			sj.damper = 0.0f;
+			pointEnd.GetComponent<SpringJoint>().minDistance = beamVector.magnitude;
+			pointEnd.GetComponent<SpringJoint>().maxDistance = beamVector.magnitude;
 		}
 	}
 

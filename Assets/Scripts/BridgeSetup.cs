@@ -47,7 +47,10 @@ public class BridgeSetup : MonoBehaviour {
 	 *  - roadLevel, the y coordinate (in Snap Point space) where all horizontal beams are roads. The rest support the bridge but are not roads.
 	 */
 	public TerrainGenerator terrainGenerator;
-	public Tuple<int, int>[] anchorPointLocations;
+	public readonly Tuple<int, int>[] anchorPointLocations = new Tuple<int, int>[] {
+		Tuple<int, int>.Of(12, 18),
+		Tuple<int, int>.Of(28, 18)
+	};
 	public int roadLevel;
 
  	/** Internal game information
@@ -63,7 +66,7 @@ public class BridgeSetup : MonoBehaviour {
 
 	private Tuple<int, int> snapPositionsDimensions = Tuple<int, int>.Of (40, 30);
 	private Vector3 snapPointSeparations = new Vector3(1, 1, 0);
-	private Vector3 snapPointOffset = new Vector3(-0.5f, -0.5f, 0);
+	private Vector3 snapPointOffset = new Vector3(-0.5f, -0.5f, 1.0f);
 
 	private Vector3 gridOrigin = Vector3.zero;
 
@@ -77,10 +80,6 @@ public class BridgeSetup : MonoBehaviour {
 
 		bridgeCost = 0;
 
-		anchorPointLocations = new Tuple<int, int>[] {
-			Tuple<int, int>.Of(12, 18),
-			Tuple<int, int>.Of(28, 18)
-		};
 		roadLevel = 18;
 
 		int w = snapPositionsDimensions._1;
@@ -158,7 +157,7 @@ public class BridgeSetup : MonoBehaviour {
 		GameObject go = Instantiate(Resources.Load ("BridgeBeam"), snapPoint.transform.position, new Quaternion()) as GameObject;
 		BridgeBeam bb = go.GetComponent<BridgeBeam>();
 		bb.bridgeSetupParent = this;
-		Vector3 newPos = new Vector3(snapPoint.transform.position.x, snapPoint.transform.position.y, gridOrigin.z+1);
+		Vector3 newPos = new Vector3(snapPoint.transform.position.x, snapPoint.transform.position.y, gridOrigin.z);
 		bb.StartLayout(newPos, snapPoint, this);
 		bb.transform.parent = bridgeBeams.transform;
 
@@ -244,7 +243,7 @@ public class BridgeSetup : MonoBehaviour {
 		int api = FindAnchorPointIndex(Mathf.FloorToInt(pointEndSnapPoint.x), Mathf.FloorToInt(pointEndSnapPoint.y));
 		SnapPoint sp = null;
 
-		if (api > 0) {
+		if (api >= 0) {
 			sp = GetSnapPoint(anchorPointLocations[api]._1, anchorPointLocations[api]._2);
 		} else {
 			sp = GetSnapPointFromBridgeBeams(pointEnd);
