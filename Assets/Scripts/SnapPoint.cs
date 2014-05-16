@@ -11,19 +11,26 @@ public class SnapPoint : MonoBehaviour {
 
 	private Vector3 originalScale;
 
+	private Color highlightColor;
+	private Color originalColor;
+
 	void Start() {
 		originalScale = new Vector3(transform.localScale.x, transform.localScale.y, transform.localScale.z);
+		originalColor = GetComponent<Renderer> ().material.color;
+		highlightColor = new Color (1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
 	void OnMouseOver() {
 		if (isBase && bridgeSetupParent != null && BridgeSetup.eLevelStage.SetupStage == bridgeSetupParent.LevelStage) {
-			transform.localScale = originalScale*2;
+			transform.localScale = originalScale*1.5f;
+			GetComponent<Renderer>().material.color = highlightColor;
 		}
 	}
 
 	void OnMouseExit() {
 		if (isBase) {
 			transform.localScale = originalScale;
+			GetComponent<Renderer>().material.color = originalColor;
 		}
 	}
 }

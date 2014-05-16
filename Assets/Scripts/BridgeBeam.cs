@@ -9,6 +9,11 @@ public class BridgeBeam : MonoBehaviour {
 		TestingMode,
 	};
 
+	public enum eBeamAppereanceState {
+		NormalMode,
+		ForceMode,
+	};
+
 	public BridgeSetup bridgeSetupParent = null;
 
 	private bool isRoadBeam = false;
@@ -31,7 +36,6 @@ public class BridgeBeam : MonoBehaviour {
 	}
 
 	private eBeamState beamState = eBeamState.LayoutMode;
-
 	public eBeamState BeamState {
 		get { return beamState; }
 		set {
@@ -47,6 +51,17 @@ public class BridgeBeam : MonoBehaviour {
 		}
 	}
 
+	private eBeamAppereanceState beamAppereanceState = eBeamAppereanceState.NormalMode;
+	public eBeamAppereanceState BeamAppereanceState {
+		get { return beamAppereanceState; }
+		set {
+			beamAppereanceState = value;
+
+			if (eBeamAppereanceState.NormalMode == beamAppereanceState) {
+			}
+		}
+	}
+
 	private GameObject beam;
 	private GameObject pointStart;
 	private Rigidbody pointStartRigidbody;
@@ -54,6 +69,8 @@ public class BridgeBeam : MonoBehaviour {
 	private Rigidbody pointEndRigidbody;
 
 	private GameObject pointClicked;
+
+	private Color originalColor;
 
 	private static Plane beamPlane = new Plane(Vector3.forward, new Vector3(0.0f, 0.0f, 0.0f));
 	private const float MAX_BEAM_DISTANCE = 4.0f;
@@ -66,10 +83,6 @@ public class BridgeBeam : MonoBehaviour {
 		get { return pointEnd; }
 	}
 
-	// Use this for initialization
-	void Start () {
-	}
-	
 	// Update is called once per frame
 	void Update () {
 		if (eBeamState.LayoutMode == beamState && Input.GetMouseButtonUp(0)){
@@ -95,6 +108,7 @@ public class BridgeBeam : MonoBehaviour {
 			}
 		} else if (eBeamState.TestingMode == beamState) {
 			PositionBeam();
+			ColorBeam();
 		}
 
 	}
@@ -120,6 +134,14 @@ public class BridgeBeam : MonoBehaviour {
 		}
 	}
 
+	private void ColorBeam() {
+		if (eBeamAppereanceState.NormalMode == beamAppereanceState) {
+			beam.GetComponent<Renderer> ().material.color = originalColor;
+		} else {
+			beam.GetComponent<Renderer> ().material.color = getForceColor();
+		}
+	}
+
 	public void StartLayout(Vector3 clickPosition, GameObject hingePoint, BridgeSetup bs) {
 		beam = transform.Find("Beam").gameObject;
 		pointStart = transform.Find("PointStart").gameObject;
@@ -136,6 +158,8 @@ public class BridgeBeam : MonoBehaviour {
 		pointClicked = pointEnd;
 		transform.position = clickPosition;
 
+		originalColor = beam.GetComponent<Renderer> ().material.color;
+
 		FixedJoint hj = pointStart.AddComponent("FixedJoint") as FixedJoint;
 		hj.connectedBody = hingePoint.rigidbody;
 	}
@@ -143,8 +167,18 @@ public class BridgeBeam : MonoBehaviour {
 	public void ResetState() {
 		pointStart.GetComponent<ResetPhysics>().Reset();
 		pointEnd.GetComponent<ResetPhysics>().Reset();
+		BeamAppereanceState = eBeamAppereanceState.NormalMode;
 		PositionBeam();
 		BeamState = eBeamState.BuiltMode;
+	}
+
+	private Color getForceColor() {
+		Color b = Color.blue;
+		Color r = Color.red;
+		SpringJoint sj = pointEnd.GetComponent<SpringJoint> ();
+		float t = sj.breakForce == Mathf.Infinity? 0.0f: sj.breakForce;
+
+		return Color.Lerp (b, r, t);
 	}
 
 	public Vector3 LimitPointDistance(Vector3 mousePos, GameObject start) {

@@ -28,6 +28,10 @@ public class TrainController : MonoBehaviour {
 		}
 	}
 
+	public bool IsTrainStarted {
+		get { return trainWorking; }
+	}
+
 	public void StartTrain() {
 		trainWorking = true;
 	}

@@ -36,7 +36,6 @@ public class BridgeSetup : MonoBehaviour {
 				SetBeamsToPlay();
 				trainController.SetVisible(true);
 				trainController.ResetTrain();
-				trainController.StartTrain();
 			}
 		}
 	}
@@ -147,9 +146,28 @@ public class BridgeSetup : MonoBehaviour {
 		CreateHingeForSnapPoint(pointEnd);
 	}
 
+	public void StartTrain() {
+		if (!trainController.IsTrainStarted) {
+			trainController.StartTrain();
+		}
+	}
+
+	public bool IsTrainStarted {
+		get { return trainController.IsTrainStarted; }
+	}
+
 	public int GetBridgeCost() {
 		return bridgeCost;
 	}
+
+	public void SetBeamsToShowForce(bool value) {
+		BridgeBeam[] bb = bridgeBeams.GetComponentsInChildren<BridgeBeam>();
+		
+		foreach (BridgeBeam b in bb) {
+			b.BeamAppereanceState = value? BridgeBeam.eBeamAppereanceState.ForceMode: BridgeBeam.eBeamAppereanceState.NormalMode;
+		}
+	}
+
 
 	//private
 
