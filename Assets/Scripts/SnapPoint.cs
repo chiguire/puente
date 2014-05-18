@@ -8,6 +8,7 @@ public class SnapPoint : MonoBehaviour {
 	public bool isBase = false;
 
 	public BridgeSetup bridgeSetupParent = null;
+	public BridgeBeam bridgeBeamParent = null;
 
 	private Vector3 originalScale;
 

@@ -118,7 +118,9 @@ public class BridgeSetup : MonoBehaviour {
 		if (eLevelStage.SetupStage == levelStage) {
 			if (Input.GetMouseButtonDown(0) && !BridgeBuilderGUI.ClickedOnGUI()) {
 				GameObject objClicked = GetSnapPointClicked();
-				if (null != objClicked) {
+				if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) {
+					DestroyBeam(objClicked);
+				} else if (null != objClicked) {
 					CreateBeam(objClicked);
 				}
 			}
@@ -182,6 +184,24 @@ public class BridgeSetup : MonoBehaviour {
 		bridgeCost += 100;
 
 		return bb;
+	}
+
+	private void DestroyBeam(GameObject snapPoint) {
+
+		if (null != snapPoint) {
+			BridgeBeam bb = snapPoint.GetComponent<SnapPoint> ().bridgeBeamParent;
+
+			if (bb != null) {
+				Destroy (bb.gameObject);
+			}
+		} else {
+			Ray r = Camera.main.ScreenPointToRay(Input.mousePosition);
+			RaycastHit rh = new RaycastHit();
+			
+			if (Physics.Raycast(r, out rh, Mathf.Infinity, 1 << 9 | 1 << 10)) {
+				Destroy(rh.collider.transform.parent.gameObject);
+			}
+		}
 	}
 
 	private Vector3 SetPointToSnapPoint(Vector3 a, Vector3 b) {

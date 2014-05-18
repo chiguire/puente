@@ -22,16 +22,6 @@ public class BridgeBeam : MonoBehaviour {
 		get { return isRoadBeam; }
 		set {
 			isRoadBeam = value;
-			Renderer r = beam.GetComponentInChildren<Renderer>();
-			Color c = r.material.color;
-			if (isRoadBeam) {
-				c.a = 1.0f;
-				beam.layer = 9; //collides with train
-			} else {
-				c.a = 0.5f;
-				beam.layer = 10; //does not collide with train
-			}
-			r.material.color = c;
 		}
 	}
 
@@ -106,6 +96,7 @@ public class BridgeBeam : MonoBehaviour {
 				IsRoadBeam = bridgeSetupParent.IsInRoadLevel(pointStart.transform.position, pointEnd.transform.position);
 				PositionBeam();
 			}
+			ColorBeam();
 		} else if (eBeamState.TestingMode == beamState) {
 			PositionBeam();
 			ColorBeam();
@@ -135,11 +126,19 @@ public class BridgeBeam : MonoBehaviour {
 	}
 
 	private void ColorBeam() {
+		Color c = originalColor;
 		if (eBeamAppereanceState.NormalMode == beamAppereanceState) {
-			beam.GetComponent<Renderer> ().material.color = originalColor;
+			if (isRoadBeam) {
+				c.a = 1.0f;
+				beam.layer = 9; //collides with train
+			} else {
+				c.a = 0.5f;
+				beam.layer = 10; //does not collide with train
+			}
 		} else {
-			beam.GetComponent<Renderer> ().material.color = getForceColor();
+			 c = getForceColor();
 		}
+		beam.GetComponent<Renderer> ().material.color = c;
 	}
 
 	public void StartLayout(Vector3 clickPosition, GameObject hingePoint, BridgeSetup bs) {
@@ -147,9 +146,11 @@ public class BridgeBeam : MonoBehaviour {
 		pointStart = transform.Find("PointStart").gameObject;
 		pointStartRigidbody = pointStart.rigidbody;
 		pointStart.GetComponent<SnapPoint>().bridgeSetupParent = bs;
+		pointStart.GetComponent<SnapPoint>().bridgeBeamParent = this;
 		pointEnd = transform.Find("PointEnd").gameObject;
 		pointEndRigidbody = pointEnd.rigidbody;
 		pointEnd.GetComponent<SnapPoint>().bridgeSetupParent = bs;
+		pointEnd.GetComponent<SnapPoint>().bridgeBeamParent = this;
 
 		pointStartRigidbody.isKinematic = true;
 		pointEndRigidbody.isKinematic = true;
