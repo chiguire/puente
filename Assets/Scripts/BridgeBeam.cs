@@ -34,6 +34,8 @@ public class BridgeBeam : MonoBehaviour {
 			if (eBeamState.TestingMode == beamState) {
 				pointStartRigidbody.isKinematic = false;
 				pointEndRigidbody.isKinematic = false;
+				pointStartRigidbody.WakeUp();
+				pointEndRigidbody.WakeUp();
 			} else {
 				pointStartRigidbody.isKinematic = true;
 				pointEndRigidbody.isKinematic = true;
@@ -46,9 +48,6 @@ public class BridgeBeam : MonoBehaviour {
 		get { return beamAppereanceState; }
 		set {
 			beamAppereanceState = value;
-
-			if (eBeamAppereanceState.NormalMode == beamAppereanceState) {
-			}
 		}
 	}
 
@@ -94,14 +93,11 @@ public class BridgeBeam : MonoBehaviour {
 				pointClicked.transform.position = LimitPointDistance(p, pointNotClicked);
 				pointClicked.GetComponent<ResetPhysics>().UpdatePosition();
 				IsRoadBeam = bridgeSetupParent.IsInRoadLevel(pointStart.transform.position, pointEnd.transform.position);
-				PositionBeam();
 			}
-			ColorBeam();
-		} else if (eBeamState.TestingMode == beamState) {
-			PositionBeam();
-			ColorBeam();
 		}
 
+		PositionBeam();
+		ColorBeam();
 	}
 
 	private void PositionBeam() {
