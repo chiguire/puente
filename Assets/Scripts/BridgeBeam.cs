@@ -104,6 +104,7 @@ public class BridgeBeam : MonoBehaviour {
 		//Create collider for beam
 		CapsuleCollider cc = beam.AddComponent<CapsuleCollider>();
 		cc.height = beamVector.magnitude/4.0f;
+		cc.material = (PhysicMaterial)Resources.Load("PhysicMaterials/Metal");
 		
 		//Create fixed joints for beam and points
 		if (anchorStart) {
@@ -172,7 +173,7 @@ public class BridgeBeam : MonoBehaviour {
 	}
 
 	public void Break() {
-		beam.renderer.enabled = false;
+		//beam.renderer.enabled = false;
 		pointStart.renderer.enabled = false;
 		pointEnd.renderer.enabled = false;
 	}
@@ -222,8 +223,7 @@ public class BridgeBeam : MonoBehaviour {
 	private Color getForceColor() {
 		Color b = Color.blue;
 		Color r = Color.red;
-		SpringJoint sj = pointEnd.GetComponent<SpringJoint> ();
-		float t = sj.breakForce == Mathf.Infinity? 0.0f: sj.breakForce;
+		float t = startJoint.breakForce == Mathf.Infinity? 0.0f: startJoint.breakForce;
 		
 		return Color.Lerp (b, r, t);
 	}

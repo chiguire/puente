@@ -69,6 +69,8 @@ public class BridgeSetup : MonoBehaviour {
 
 	private Vector3 gridOrigin = Vector3.zero;
 
+	private float trainGoal;
+
 	void Start () {
 		terrainGenerator.CreateTerrain();
 
@@ -84,11 +86,13 @@ public class BridgeSetup : MonoBehaviour {
 		int w = snapPositionsDimensions._1;
 		int h = snapPositionsDimensions._2;
 		Vector3 dims = new Vector3(w*snapPointSeparations.x, h*snapPointSeparations.y, 0);
-		
+
 		gridOrigin.x = -dims.x/2.0f+snapPointOffset.x;
 		gridOrigin.y = -dims.y/2.0f+snapPointOffset.y;
 		gridOrigin.z = snapPointOffset.z;
 
+		trainGoal = gridOrigin.x + dims.x;
+		
 		GameObject ap = Resources.Load("AnchorPoint") as GameObject;
 		GameObject sp = Resources.Load("SnapPoint") as GameObject;
 //
@@ -116,13 +120,17 @@ public class BridgeSetup : MonoBehaviour {
 
 	void Update () {
 		if (eLevelStage.SetupStage == levelStage) {
-			if (Input.GetMouseButtonDown(0) && !BridgeBuilderGUI.ClickedOnGUI()) {
-				GameObject objClicked = GetSnapPointClicked();
-				if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) {
-					DestroyBeam(objClicked);
+			if (Input.GetMouseButtonDown (0) && !BridgeBuilderGUI.ClickedOnGUI ()) {
+				GameObject objClicked = GetSnapPointClicked ();
+				if (Input.GetKey (KeyCode.LeftControl) || Input.GetKey (KeyCode.RightControl)) {
+					DestroyBeam (objClicked);
 				} else if (null != objClicked) {
-					CreateBeam(objClicked);
+					CreateBeam (objClicked);
 				}
+			}
+		} else if (eLevelStage.PlayStage == levelStage) {
+			if (trainController.trainHead.transform.position.x >= trainGoal) {
+				Debug.Log ("Exito logrado");
 			}
 		}
 	}

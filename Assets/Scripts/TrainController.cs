@@ -7,7 +7,7 @@ public class TrainController : MonoBehaviour {
 
 	private ResetPhysics[] trainWagon;
 
-	private GameObject trainHead;
+	public GameObject trainHead;
 	private bool trainWorking = false;
 
 	// Use this for initialization
