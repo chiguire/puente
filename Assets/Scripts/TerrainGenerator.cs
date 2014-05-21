@@ -18,12 +18,12 @@ public class TerrainGenerator : MonoBehaviour {
 				
 				for (int i = 0; i != heights.Length; i++) {
 					//heights[i] = Mathf.PerlinNoise(((float)i)/heights.Length*5.0f, 11)*5.0f;
-					if (i < 40) {
-						heights[i] = -Mathf.Sin((float)40/heights.Length*Mathf.PI*10-Mathf.PI*0.5f)*3.0f;;
-					} else if (i < 60) {
-						heights[i] = -Mathf.Sin((float)i/heights.Length*Mathf.PI*10-Mathf.PI*0.5f)*3.0f;
+					if (i < 42) {
+						heights[i] = 3.0f;
+					} else if (i < 58) {
+						heights[i] = -1.0f;
 					} else {
-						heights[i] = -Mathf.Sin((float)60/heights.Length*Mathf.PI*10-Mathf.PI*0.5f)*3.0f;
+						heights[i] = 3.0f;
 					}
 				}
 			}

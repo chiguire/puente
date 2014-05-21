@@ -31,7 +31,7 @@ public class BridgeSetup : MonoBehaviour {
 				trainController.SetVisible(false);
 				SetBeamsToSetup();
 			} else if (eLevelStage.PlayStage == levelStage) {
-				Time.timeScale = 1.0f;
+				Time.timeScale = 0.0f;
 				SetSnapPointsVisible(false);
 				SetBeamsToPlay();
 				trainController.SetVisible(true);
@@ -144,8 +144,22 @@ public class BridgeSetup : MonoBehaviour {
 		return Mathf.FloorToInt(FromSpaceToSnap(a).y) == roadLevel && Mathf.FloorToInt(FromSpaceToSnap(b).y) == roadLevel;
 	}
 
-	public void HandleEndPoint(GameObject pointEnd) {
-		CreateHingeForSnapPoint(pointEnd);
+	public GameObject GetOtherEndPoint(GameObject pointEnd) {
+		Vector3 pointEndSnapPoint = FromSpaceToSnap(pointEnd.transform.position);
+		int api = FindAnchorPointIndex(Mathf.FloorToInt(pointEndSnapPoint.x), Mathf.FloorToInt(pointEndSnapPoint.y));
+		SnapPoint sp = null;
+		
+		if (api >= 0) {
+			sp = GetSnapPoint(anchorPointLocations[api]._1, anchorPointLocations[api]._2);
+		} else {
+			sp = GetSnapPointFromBridgeBeams(pointEnd);
+			
+			if (sp == null) {
+				return null;
+			}
+		}
+
+		return sp.gameObject;
 	}
 
 	public void StartTrain() {
@@ -193,6 +207,7 @@ public class BridgeSetup : MonoBehaviour {
 
 			if (bb != null) {
 				Destroy (bb.gameObject);
+				bridgeCost -= 100;
 			}
 		} else {
 			Ray r = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -200,6 +215,7 @@ public class BridgeSetup : MonoBehaviour {
 			
 			if (Physics.Raycast(r, out rh, Mathf.Infinity, 1 << 9 | 1 << 10)) {
 				Destroy(rh.collider.transform.parent.gameObject);
+				bridgeCost -= 100;
 			}
 		}
 	}
@@ -243,7 +259,7 @@ public class BridgeSetup : MonoBehaviour {
 		BridgeBeam[] bb = bridgeBeams.GetComponentsInChildren<BridgeBeam>();
 		
 		foreach (BridgeBeam b in bb) {
-			b.BeamState = BridgeBeam.eBeamState.TestingMode;
+			b.SetToPlay();
 		}
 	}
 
@@ -251,7 +267,7 @@ public class BridgeSetup : MonoBehaviour {
 		BridgeBeam[] bb = bridgeBeams.GetComponentsInChildren<BridgeBeam>();
 		
 		foreach (BridgeBeam b in bb) {
-			b.ResetState();
+			b.ResetToSetup();
 		}
 	}
 
@@ -274,25 +290,6 @@ public class BridgeSetup : MonoBehaviour {
 		}
 
 		return null;
-	}
-
-	private void CreateHingeForSnapPoint(GameObject pointEnd) {
-		Vector3 pointEndSnapPoint = FromSpaceToSnap(pointEnd.transform.position);
-		int api = FindAnchorPointIndex(Mathf.FloorToInt(pointEndSnapPoint.x), Mathf.FloorToInt(pointEndSnapPoint.y));
-		SnapPoint sp = null;
-
-		if (api >= 0) {
-			sp = GetSnapPoint(anchorPointLocations[api]._1, anchorPointLocations[api]._2);
-		} else {
-			sp = GetSnapPointFromBridgeBeams(pointEnd);
-
-			if (sp == null) {
-				return;
-			}
-		}
-
-		FixedJoint hj = pointEnd.AddComponent("FixedJoint") as FixedJoint;
-		hj.connectedBody = sp.GetComponent<Rigidbody>();
 	}
 
 	private SnapPoint GetSnapPointFromBridgeBeams(GameObject point) {
