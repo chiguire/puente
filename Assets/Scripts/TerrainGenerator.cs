@@ -8,6 +8,7 @@ public class TerrainGenerator : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		transform.position = Vector3.zero;
 	}
 
 	public void CreateTerrain(float[] h = null)

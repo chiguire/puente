@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 public class BridgeSetup : MonoBehaviour {
 
+	public GameObject AnchorPointPrefab;
+	public GameObject SnapPointPrefab;
+	public GameObject BridgeBeamPrefab;
+	
 	/** LevelStage determines which stage of the level the player is:
 	 *  - SetupStage lets the player put beams around. Beams are kinetic.
 	 *  - PlayStage spawns the train and makes it pass the bridge. Beams are dynamic.
@@ -46,7 +50,7 @@ public class BridgeSetup : MonoBehaviour {
 	 *  - roadLevel, the y coordinate (in Snap Point space) where all horizontal beams are roads. The rest support the bridge but are not roads.
 	 */
 	public TerrainGenerator terrainGenerator;
-	public readonly Tuple<int, int>[] anchorPointLocations = new Tuple<int, int>[] {
+	public Tuple<int, int>[] anchorPointLocations = new Tuple<int, int>[] {
 		Tuple<int, int>.Of(12, 18),
 		Tuple<int, int>.Of(28, 18)
 	};
@@ -70,9 +74,21 @@ public class BridgeSetup : MonoBehaviour {
 	private Vector3 gridOrigin = Vector3.zero;
 
 	private float trainGoal;
+	
+	public bool finishedLevel;
 
 	void Start () {
-		terrainGenerator.CreateTerrain();
+		transform.position = Vector3.zero;
+		
+		finishedLevel = false;
+		
+		if (GetLevel () != null) {
+			terrainGenerator.CreateTerrain(GetLevel ().heights);
+			anchorPointLocations = GetLevel ().anchorPointLocations;
+			roadLevel = GetLevel().roadLevel;
+		} else {
+			terrainGenerator.CreateTerrain();
+		}
 
 		snapPoints = new GameObject();
 		snapPoints.name = "SnapPointsContainer";
@@ -93,20 +109,11 @@ public class BridgeSetup : MonoBehaviour {
 
 		trainGoal = gridOrigin.x + dims.x;
 		
-		GameObject ap = Resources.Load("AnchorPoint") as GameObject;
-		GameObject sp = Resources.Load("SnapPoint") as GameObject;
-//
-//		for (int i = 0; i != anchorPointLocations.Length; i++)
-//		{
-//			GameObject go = Instantiate(ap, FromSnapToSpace(new Vector3(anchorPointLocations[i]._1, anchorPointLocations[i]._2, gridOrigin.z)), new Quaternion()) as GameObject;
-//			go.transform.parent = snapPoints.transform;
-//		}
-//
 		for (int j = 0; j != h; j++) {
 			for (int i = 0; i != w; i++) {
 				bool foundAnchor = FindAnchorPointIndex(i, j) != -1;
 				Vector3 pos = FromSnapToSpace(new Vector3(i, j, gridOrigin.z));
-				GameObject go = Instantiate((foundAnchor? ap: sp), pos, new Quaternion()) as GameObject;
+				GameObject go = Instantiate((foundAnchor? AnchorPointPrefab: SnapPointPrefab), pos, new Quaternion()) as GameObject;
 				go.transform.parent = snapPoints.transform;
 				go.layer = 8;
 				go.GetComponent<SnapPoint>().position = Tuple<int, int>.Of(i, j);
@@ -130,7 +137,7 @@ public class BridgeSetup : MonoBehaviour {
 			}
 		} else if (eLevelStage.PlayStage == levelStage) {
 			if (trainController.trainHead.transform.position.x >= trainGoal) {
-				Debug.Log ("Exito logrado");
+				finishedLevel = true;
 			}
 		}
 	}
@@ -191,12 +198,22 @@ public class BridgeSetup : MonoBehaviour {
 			b.BeamAppereanceState = value? BridgeBeam.eBeamAppereanceState.ForceMode: BridgeBeam.eBeamAppereanceState.NormalMode;
 		}
 	}
+	
+	public string GetLevelName() {
+	    if (GetLevel() == null) {
+	    	return "Default level";
+	    }
+		return GetLevel().name;
+	}
 
+	public Level GetLevel() {
+		return TitleScreenGUI.currentLevel;
+	}
 
 	//private
 
 	private BridgeBeam CreateBeam(GameObject snapPoint) {
-		GameObject go = Instantiate(Resources.Load ("BridgeBeam"), snapPoint.transform.position, new Quaternion()) as GameObject;
+		GameObject go = Instantiate(BridgeBeamPrefab, snapPoint.transform.position, new Quaternion()) as GameObject;
 		BridgeBeam bb = go.GetComponent<BridgeBeam>();
 		bb.bridgeSetupParent = this;
 		Vector3 newPos = new Vector3(snapPoint.transform.position.x, snapPoint.transform.position.y, gridOrigin.z);

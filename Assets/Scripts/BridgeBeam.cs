@@ -3,6 +3,8 @@ using System.Collections;
 
 public class BridgeBeam : MonoBehaviour {
 
+	public PhysicMaterial beamMaterial;
+	
 	public enum eBeamState {
 		LayoutMode,
 		BuiltMode,
@@ -104,12 +106,14 @@ public class BridgeBeam : MonoBehaviour {
 		//Create collider for beam
 		CapsuleCollider cc = beam.AddComponent<CapsuleCollider>();
 		cc.height = beamVector.magnitude/4.0f;
-		cc.material = (PhysicMaterial)Resources.Load("PhysicMaterials/Metal");
+		cc.material = beamMaterial;
 		
 		//Create fixed joints for beam and points
 		if (anchorStart) {
 			startJoint = pointStart.AddComponent<HingeJoint> ();
+			startJoint.anchor = Vector3.zero;
 			startJoint.autoConfigureConnectedAnchor = true;
+			//startJoint.connectedAnchor = new Vector3(0.0f, 0.0f, 0.0f);
 			startJoint.connectedBody = anchorStart.rigidbody;
 			startJoint.axis = Vector3.forward;
 			startJoint.breakForce = 2.0f;
@@ -117,7 +121,9 @@ public class BridgeBeam : MonoBehaviour {
 
 		if (anchorEnd) {
 			endJoint = pointEnd.AddComponent<HingeJoint> ();
+			endJoint.anchor = Vector3.zero;
 			endJoint.autoConfigureConnectedAnchor = true;
+			//endJoint.connectedAnchor = new Vector3(1.0f, 0.0f, 0.0f);
 			endJoint.connectedBody = anchorEnd.rigidbody;
 			endJoint.axis = Vector3.forward;
 			endJoint.breakForce = 2.0f;
