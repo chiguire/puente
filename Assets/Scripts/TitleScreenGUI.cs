@@ -6,8 +6,8 @@ public class TitleScreenGUI : MonoBehaviour {
 
 	public Texture logoIcon;
 	
-	private static Rect windowRect = new Rect(150, 40, Screen.width - 10, Screen.height - 10);
-	private static Rect levelsRect = new Rect(170, 150, Screen.width - 60, 30); 
+	private static Rect windowRect = new Rect(10, 10, Screen.width - 20, Screen.height - 20);
+	private static Rect levelsRect = new Rect(30, 120, Screen.width - 60, 30); 
 	
 	public static Level[] levels;
 	
@@ -17,10 +17,11 @@ public class TitleScreenGUI : MonoBehaviour {
 	
 	void Start() {
 		if (!levelsLoaded) {
-			levels = new Level[3];
+			levels = new Level[4];
 			levels[0] = LoadLevel ("level1");
 			levels[1] = LoadLevel ("level2");
 			levels[2] = LoadLevel ("level3");
+			levels[3] = LoadLevel ("level4");
 			
 			levelsLoaded = true;
 		}
@@ -40,6 +41,7 @@ public class TitleScreenGUI : MonoBehaviour {
 			var APL = N["anchorPointLocations"][i];
 			l.anchorPointLocations[i] = Tuple<int, int>.Of (APL[0].AsInt, APL[1].AsInt);
 		}
+		l.budget = N["budget"].AsInt;
 		
 		l.heights = new float[N["heights"].Count];
 		for (int i = 0; i != l.heights.Length; i++) {
@@ -51,7 +53,7 @@ public class TitleScreenGUI : MonoBehaviour {
 	void OnGUI() {
 		GUI.Box(windowRect, logoIcon);
 		
-		GUI.Label (new Rect(170, 120, Screen.width-60, 20), "Programming by: Ciro Duran. Textures by: Adolfo Roig, Csava Felgevi (chabull). May 2014.");
+		GUI.Label (new Rect(30, 80, Screen.width-60, 20), "Programming by: Ciro Duran. Textures by: Adolfo Roig, Csava Felgevi (chabull). May 2014.");
 		
 		for (int i = 0; i != levels.Length; i++) {
 			Rect r = new Rect(levelsRect);

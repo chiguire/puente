@@ -55,6 +55,7 @@ public class BridgeSetup : MonoBehaviour {
 		Tuple<int, int>.Of(28, 18)
 	};
 	public int roadLevel;
+	public int bridgeBudget;
 
  	/** Internal game information
  	 *  - snapPoints, contains all snap points when in Setup Stage.
@@ -86,8 +87,10 @@ public class BridgeSetup : MonoBehaviour {
 			terrainGenerator.CreateTerrain(GetLevel ().heights);
 			anchorPointLocations = GetLevel ().anchorPointLocations;
 			roadLevel = GetLevel().roadLevel;
+			bridgeBudget = GetLevel().budget;
 		} else {
 			terrainGenerator.CreateTerrain();
+			bridgeBudget = 100000;
 		}
 
 		snapPoints = new GameObject();
@@ -132,7 +135,11 @@ public class BridgeSetup : MonoBehaviour {
 				if (Input.GetKey (KeyCode.LeftControl) || Input.GetKey (KeyCode.RightControl)) {
 					DestroyBeam (objClicked);
 				} else if (null != objClicked) {
-					CreateBeam (objClicked);
+					if (bridgeCost+100 <= bridgeBudget) {
+						CreateBeam (objClicked);
+					} else {
+						Camera.main.GetComponent<BridgeBuilderGUI>().DisplayOverBudgetError();
+					}
 				}
 			}
 		} else if (eLevelStage.PlayStage == levelStage) {
@@ -189,6 +196,10 @@ public class BridgeSetup : MonoBehaviour {
 
 	public int GetBridgeCost() {
 		return bridgeCost;
+	}
+	
+	public int GetBridgeBudget() {
+		return bridgeBudget;
 	}
 
 	public void SetBeamsToShowForce(bool value) {

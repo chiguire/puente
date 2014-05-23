@@ -17,6 +17,15 @@ public class BridgeBuilderGUI : MonoBehaviour {
 
 	private bool timeToggle = false;
 	//private bool showForce = false;
+	
+	private bool displayOverBudgetError = false;
+	private readonly int timerToDisplay = 120;
+	private int timer = 0;
+	
+	public void DisplayOverBudgetError() {
+		displayOverBudgetError = true;
+		timer = timerToDisplay;
+	}
 
 	void OnGUI () {
 		if (!bridgeSetup.finishedLevel) {
@@ -24,7 +33,7 @@ public class BridgeBuilderGUI : MonoBehaviour {
 	
 			GUI.Label(new Rect(18, 18, 300, 20), bridgeSetup.GetLevelName());
 			GUI.Label(new Rect(18, 36, 300, 20), "Click - Add. Ctrl-Click - Delete.");
-			GUI.Label(new Rect(18, 54, 300, 20), "Cost: "+bridgeSetup.GetBridgeCost()+"$");
+			GUI.Label(new Rect(18, 54, 300, 20), "Cost: "+bridgeSetup.GetBridgeCost()+"£ / Budget: "+bridgeSetup.GetBridgeBudget()+"£");
 	
 			if (BridgeSetup.eLevelStage.PlayStage == bridgeSetup.LevelStage) {
 				if (GUI.Button (new Rect (318,18,100,50), "Back to Draw")) {
@@ -55,6 +64,15 @@ public class BridgeBuilderGUI : MonoBehaviour {
 			} else if (BridgeSetup.eLevelStage.SetupStage == bridgeSetup.LevelStage) {
 				if (GUI.Button (new Rect (318,18,100,50), "Test Bridge")) {
 					bridgeSetup.LevelStage = BridgeSetup.eLevelStage.PlayStage;
+				}
+			}
+			
+			if (displayOverBudgetError) {
+				Rect r = new Rect(Screen.width/2.0f - 100.0f, Screen.height/2.0f - 30.0f, 200.0f, 40.0f);
+				GUI.Box (r, "You can't go over the budget!");
+				timer--;
+				if (timer <= 0) {
+					displayOverBudgetError = false;
 				}
 			}
 		} else {

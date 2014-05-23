@@ -16,4 +16,5 @@ public class Level
 		public float[] heights;
 		public Tuple<int, int>[] anchorPointLocations;
 		public int roadLevel;
+		public int budget;
 }

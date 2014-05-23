@@ -116,7 +116,7 @@ public class BridgeBeam : MonoBehaviour {
 			//startJoint.connectedAnchor = new Vector3(0.0f, 0.0f, 0.0f);
 			startJoint.connectedBody = anchorStart.rigidbody;
 			startJoint.axis = Vector3.forward;
-			startJoint.breakForce = 2.0f;
+			startJoint.breakForce = 2.55f;
 		}
 
 		if (anchorEnd) {
@@ -126,7 +126,7 @@ public class BridgeBeam : MonoBehaviour {
 			//endJoint.connectedAnchor = new Vector3(1.0f, 0.0f, 0.0f);
 			endJoint.connectedBody = anchorEnd.rigidbody;
 			endJoint.axis = Vector3.forward;
-			endJoint.breakForce = 2.0f;
+			endJoint.breakForce = 2.55f;
 		}
 
 		beamStartJoint = beam.AddComponent<FixedJoint> ();
