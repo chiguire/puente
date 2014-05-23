@@ -10,6 +10,9 @@ A bridge building game in Unity
 This game uses the Unity and the bundled PhysX library capabilities to let the player build a bridge, where a train will pass through. This project allows players to
 meet the challenges of building an structure similar to mass-spring systems.
 
+Youtube video at: [https://www.youtube.com/watch?v=kpEreQ3aPvU](https://www.youtube.com/watch?v=kpEreQ3aPvU)
+Source code at: [https://github.com/chiguire/puente/](https://github.com/chiguire/puente/)
+
 ![Game screenshot](https://raw.githubusercontent.com/chiguire/puente/master/img/puente4.png)
 
 
