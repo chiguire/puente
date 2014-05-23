@@ -142,6 +142,7 @@ public class BridgeSetup : MonoBehaviour {
 					}
 				}
 			}
+			RecalculateCost();
 		} else if (eLevelStage.PlayStage == levelStage) {
 			if (trainController.trainHead.transform.position.x >= trainGoal) {
 				finishedLevel = true;
@@ -230,9 +231,7 @@ public class BridgeSetup : MonoBehaviour {
 		Vector3 newPos = new Vector3(snapPoint.transform.position.x, snapPoint.transform.position.y, gridOrigin.z);
 		bb.StartLayout(newPos, snapPoint, this);
 		bb.transform.parent = bridgeBeams.transform;
-
-		bridgeCost += 100;
-
+		
 		return bb;
 	}
 
@@ -243,7 +242,6 @@ public class BridgeSetup : MonoBehaviour {
 
 			if (bb != null) {
 				Destroy (bb.gameObject);
-				bridgeCost -= 100;
 			}
 		} else {
 			Ray r = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -251,9 +249,12 @@ public class BridgeSetup : MonoBehaviour {
 			
 			if (Physics.Raycast(r, out rh, Mathf.Infinity, 1 << 9 | 1 << 10)) {
 				Destroy(rh.collider.transform.parent.gameObject);
-				bridgeCost -= 100;
 			}
 		}
+	}
+	
+	private void RecalculateCost() {
+		bridgeCost = bridgeBeams.transform.childCount*100;
 	}
 
 	private Vector3 SetPointToSnapPoint(Vector3 a, Vector3 b) {
