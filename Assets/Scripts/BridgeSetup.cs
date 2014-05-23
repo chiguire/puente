@@ -121,6 +121,7 @@ public class BridgeSetup : MonoBehaviour {
 				go.layer = 8;
 				go.GetComponent<SnapPoint>().position = Tuple<int, int>.Of(i, j);
 				go.GetComponent<SnapPoint>().isBase = foundAnchor;
+				go.GetComponent<SnapPoint>().isBaseTerrain = foundAnchor;
 				go.GetComponent<SnapPoint>().bridgeSetupParent = this;
 			}
 		}

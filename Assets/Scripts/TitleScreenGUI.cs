@@ -17,11 +17,12 @@ public class TitleScreenGUI : MonoBehaviour {
 	
 	void Start() {
 		if (!levelsLoaded) {
-			levels = new Level[4];
+			levels = new Level[5];
 			levels[0] = LoadLevel ("level1");
 			levels[1] = LoadLevel ("level2");
 			levels[2] = LoadLevel ("level3");
 			levels[3] = LoadLevel ("level4");
+			levels[4] = LoadLevel ("level5");
 			
 			levelsLoaded = true;
 		}

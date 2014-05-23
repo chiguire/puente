@@ -6,6 +6,7 @@ public class SnapPoint : MonoBehaviour {
 	public Tuple<int, int> position = Tuple<int, int>.Of(0, 0);
 
 	public bool isBase = false;
+	public bool isBaseTerrain = false;
 
 	public BridgeSetup bridgeSetupParent = null;
 	public BridgeBeam bridgeBeamParent = null;

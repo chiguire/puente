@@ -110,23 +110,25 @@ public class BridgeBeam : MonoBehaviour {
 		
 		//Create fixed joints for beam and points
 		if (anchorStart) {
+			bool terrainAnchor = anchorStart.GetComponent<SnapPoint>().isBaseTerrain;
 			startJoint = pointStart.AddComponent<HingeJoint> ();
 			startJoint.anchor = Vector3.zero;
 			startJoint.autoConfigureConnectedAnchor = true;
 			//startJoint.connectedAnchor = new Vector3(0.0f, 0.0f, 0.0f);
 			startJoint.connectedBody = anchorStart.rigidbody;
 			startJoint.axis = Vector3.forward;
-			startJoint.breakForce = 2.55f;
+			startJoint.breakForce = terrainAnchor? 5.0f: 2.55f;
 		}
 
 		if (anchorEnd) {
+			bool terrainAnchor = anchorStart.GetComponent<SnapPoint>().isBaseTerrain;
 			endJoint = pointEnd.AddComponent<HingeJoint> ();
 			endJoint.anchor = Vector3.zero;
 			endJoint.autoConfigureConnectedAnchor = true;
 			//endJoint.connectedAnchor = new Vector3(1.0f, 0.0f, 0.0f);
 			endJoint.connectedBody = anchorEnd.rigidbody;
 			endJoint.axis = Vector3.forward;
-			endJoint.breakForce = 2.55f;
+			endJoint.breakForce = terrainAnchor? 5.0f: 2.55f;
 		}
 
 		beamStartJoint = beam.AddComponent<FixedJoint> ();
